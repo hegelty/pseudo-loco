@@ -140,8 +140,8 @@ def sender_text(room, message: TextMessage):
     win = gw.getWindowsWithTitle(room)
     if not win:
         set_room(room)
-        win = gw.getWindowsWithTitle(room)
         time.sleep(0.3)
+        win = gw.getWindowsWithTitle(room)
     win = win[0]
     if win.isActive == False:
         pywinauto.application.Application().connect(handle=win._hWnd).top_window().set_focus()
@@ -169,8 +169,8 @@ def sender_file(room, filepath):
     win = gw.getWindowsWithTitle(room)
     if not win:
         set_room(room)
-        win = gw.getWindowsWithTitle(room)
         time.sleep(0.3)
+        win = gw.getWindowsWithTitle(room)
     win = win[0]
     if win.isActive == False:
         pywinauto.application.Application().connect(handle=win._hWnd).top_window().set_focus()
@@ -178,17 +178,11 @@ def sender_file(room, filepath):
 
     time.sleep(0.2)
     pg.hotkey('ctrl', 't')
-    time.sleep(0.3)
-    pg.press('tab', presses=5, interval=0.02)
+    time.sleep(0.5)
+    pyperclip.copy(filepath)
+    pg.hotkey('ctrl', 'v')
     time.sleep(0.05)
-    pg.press('enter')
-    pg.write("\\".join(filepath.split('\\')[:-1]))
     pg.press('enter')
     time.sleep(0.2)
-    pg.press('tab', presses=6, interval=0.05)
-    time.sleep(0.1)
-    pg.write(filepath.split('\\')[-1])
-    time.sleep(0.05)
-    pg.press('enter')
 
     return
