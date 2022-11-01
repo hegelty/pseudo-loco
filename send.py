@@ -1,3 +1,4 @@
+import threading
 from io import BytesIO, StringIO
 import win32con as wcon
 import win32api as wapi
@@ -12,30 +13,34 @@ import time
 import queue
 
 message_que = queue.Queue()
-sending = False
 kakao_window = 0
 
 
 class TextMessage():
     data = []
+    def __init__(self):
+        self.data = []
 
     def text(self, text: str):
         self.data.append({
             'type': 'text',
             'data': text
         })
+        return self
 
     def mention(self, target: str):
         self.data.append({
             'type': 'mention',
             'data': target
         })
+        return self
 
     def lw(self):
         self.data.append({
             'type': 'lw',
             'data': ''
         })
+        return self
 
 
 def init():
@@ -44,6 +49,8 @@ def init():
     if kakao_window == 0:
         print("카카오톡이 실행되지 않았습니다.")
         exit(0)
+    sender_thread = threading.Thread(target=sender, args=(message_que,))
+    sender_thread.start()
 
 
 # 엔터 입력
@@ -108,8 +115,6 @@ def send_message(room, message: TextMessage):
         "room": room,
         "data": message
     })
-    if not sending:
-        sender()
 
 
 def send_file(room, filepath):
@@ -118,22 +123,22 @@ def send_file(room, filepath):
         "room": room,
         "data": filepath
     })
-    if not sending:
-        sender()
 
 
-def sender():
-    global sending
-    sending = True
-    while not message_que.empty():
-        message = message_que.get()
+def sender(q):
+    while True:
+        message = q.get()
+
+        start = time.perf_counter()
         room = message["room"]
         message_type = message["type"]
         if message_type == 'text':
             sender_text(room, message["data"])
         elif message_type == 'file':
             sender_file(room, message["data"])
-    sending = False
+
+        end = time.perf_counter()
+        print(f'{(end - start) * 1000}ms')
 
 
 def sender_text(room, message: TextMessage):
